@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Reply to Question</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ question.title }}</h5>
+            <p class="card-text">{{ question.body }}</p>
+        </div>
+    </div>
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Submit Reply</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">{{ question.title }}</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            <p>{{ question.body }}</p>
+            <small class="text-muted">Posted by {{ question.user.email }} on {{ question.created_at|date:"F j, Y, g:i a" }}</small>
+        </div>
+    </div>
+    <h4>Replies:</h4>
+    <div class="list-group">
+        {% for reply in replies %}
+            {% include 'partials/replies.html' with reply=reply %}
+        {% empty %}
+            <p>No replies yet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Toggle reply form visibility
+        const replyButtons = document.querySelectorAll('.reply-button');
+        replyButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const replyId = this.getAttribute('data-reply-id');
+                const replyForm = document.getElementById(`reply-form-${replyId}`);
+                if (replyForm.style.display === 'none') {
+                    replyForm.style.display = 'block';
+                } else {
+                    replyForm.style.display = 'none';
+                }
+            });
+        });
+
+        // Handle like button clicks
+        const likeButtons = document.querySelectorAll('.like-button');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const replyId = this.getAttribute('data-reply-id');
+                fetch(`/like-reply/${replyId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.liked) {
+                        this.classList.remove('btn-outline-primary');
+                        this.classList.add('btn-primary');
+                    } else {
+                        this.classList.remove('btn-primary');
+                        this.classList.add('btn-outline-primary');
+                    }
+                    this.textContent = `Like (${data.likes_count})`;
+                });
+            });
+        });
+
+        // Handle reply form submission
+        const replyForms = document.querySelectorAll('.reply-to-reply-form');
+        replyForms.forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const parentReplyId = formData.get('parent_reply_id');
+                fetch(`/reply/${parentReplyId}/`, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); // Reload the page to show the new reply
+                    } else {
+                        alert('Failed to submit reply.');
+                    }
+                });
+            });
+        });
+
+        // Toggle child replies visibility
+        const toggleChildRepliesButtons = document.querySelectorAll('.toggle-child-replies');
+        toggleChildRepliesButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const replyId = this.getAttribute('data-reply-id');
+                const childRepliesDiv = document.getElementById(`child-replies-${replyId}`);
+                if (childRepliesDiv.style.display === 'none') {
+                    childRepliesDiv.style.display = 'block';
+                    this.innerHTML = '<i class="bi bi-chevron-up"></i> Hide Replies';
+                } else {
+                    childRepliesDiv.style.display = 'none';
+                    this.innerHTML = '<i class="bi bi-chevron-down"></i> Show Replies';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
