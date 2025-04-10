@@ -55,3 +55,8 @@ Login: Log in to your account.
 Post Questions: Add new questions to the platform.
 Reply: Reply to questions or other replies.
 Like: Like replies to show appreciation.
+
+
+The project is hosted on [Railway](https://railway.app). You can access the live application at:
+
+**Production URL**: https://web-production-dcc9.up.railway.app (https://web-production-dcc9.up.railway.app)
