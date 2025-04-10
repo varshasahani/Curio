@@ -69,7 +69,7 @@
                 e.preventDefault();
                 const formData = new FormData(this);
                 const parentReplyId = formData.get('parent_reply_id');
-                fetch(`/reply/${parentReplyId}/`, {
+                fetch(`/reply-to-reply/${parentReplyId}/`, {
                     method: 'POST',
                     body: formData,
                 })

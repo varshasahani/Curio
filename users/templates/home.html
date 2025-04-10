@@ -105,7 +105,7 @@
                 const questionId = this.getAttribute('data-question-id');
                 const formData = new FormData(this);
 
-                fetch(`/reply/${questionId}/`, {
+                fetch(`/reply-to-question/${questionId}/`, {
                     method: 'POST',
                     body: formData,
                 })

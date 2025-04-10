@@ -35,17 +35,13 @@ def login_page(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            try:
-                del request.session['guest_email_id']
-            except:
-                pass
             if url_has_allowed_host_and_scheme(redirect_path, request.get_host()):
                 return redirect(redirect_path)
             else:
                 return redirect("/")
         else:
             # Return an 'invalid login' error message.
-            print("Error")
+            form.add_error(None, "Invalid username or password")
     return render(request, "login.html", context)
 
 
@@ -56,12 +52,11 @@ def register_page(request):
         "form": form
     }
     if form.is_valid():
-        print(form.cleaned_data)
         username  = form.cleaned_data.get("username")
         email  = form.cleaned_data.get("email")
         password  = form.cleaned_data.get("password")
         new_user  = User.objects.create_user(username, email, password)
-        print(new_user)
+        return redirect('login')
 
     return render(request, "register.html", context)
 
@@ -94,30 +89,46 @@ def like_question(request, question_id):
 
 @login_required
 def reply_to_question(request, question_id):
-    item=None
-    item_type=None
-    try:
-        item= get_object_or_404(Question, id=question_id)
-        item_type = 'questions'
-    except:
-        try:
-            item = get_object_or_404(Reply, id=question_id)
-            print('item',item.question)
-            item_type = 'reply'
-        except:
-            return JsonResponse({'error': 'Item not found'}, status=404)
+    question = get_object_or_404(Question, id=question_id)
+
     if request.method == 'POST':
         body = request.POST.get('body')
         if body:
+            # Create a reply to the question
             reply = Reply.objects.create(
                 user=request.user,
-                question=item if item_type == 'questions' else item.question,
-                parent_reply=item if item_type == 'reply' else None,
+                question=question,
+                parent_reply=None,  # No parent reply since this is a reply to a question
                 body=body
             )
+
             # Render the updated replies section
-            replies_html = render_to_string('partials/replies.html', {'reply': item})
+            replies = question.replies.all()
+            replies_html = render_to_string('partials/replies.html', {'replies': replies}, request=request)
             return JsonResponse({'success': True, 'replies_html': replies_html})
+
+    return JsonResponse({'success': False})
+
+@login_required
+def reply_to_reply(request, reply_id):
+    parent_reply = get_object_or_404(Reply, id=reply_id)
+
+    if request.method == 'POST':
+        body = request.POST.get('body')
+        if body:
+            # Create a reply to the parent reply
+            reply = Reply.objects.create(
+                user=request.user,
+                question=parent_reply.question,  # Use the question from the parent reply
+                parent_reply=parent_reply,  # Set the parent reply
+                body=body
+            )
+
+            # Render the updated child replies section
+            child_replies = parent_reply.child_replies.all()
+            child_replies_html = render_to_string('partials/replies.html', {'replies': child_replies}, request=request)
+            return JsonResponse({'success': True, 'child_replies_html': child_replies_html})
+
     return JsonResponse({'success': False})
 
 def question_detail(request, question_id):

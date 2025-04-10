@@ -17,7 +17,7 @@
     <div class="reply-form.inactive mt-3" id="reply-form-{{ reply.id }}">
         <form method="post" class="reply-to-reply-form">
             {% csrf_token %}
-            <textarea name="body" class="form-control mb-2" rows="3" placeholder="Write your reply here..."></textarea>
+            <textarea name="body" class="form-control mb-2" rows="1" placeholder="Write your reply here..."></textarea>
             <input type="hidden" name="parent_reply_id" value="{{ reply.id }}">
             <button type="submit" class="btn btn-primary btn-sm">Submit Reply</button>
         </form>
@@ -70,22 +70,39 @@
         });
     });
 
-    document.querySelectorAll('.toggle-child-replies').forEach(button => {
+    document.addEventListener('DOMContentLoaded', function () {
+    // Toggle child replies visibility
+    const toggleChildRepliesButtons = document.querySelectorAll('.toggle-child-replies');
+    toggleChildRepliesButtons.forEach(button => {
         button.addEventListener('click', function () {
             const replyId = this.getAttribute('data-reply-id');
             const childRepliesDiv = document.getElementById(`child-replies-${replyId}`);
-            if (childRepliesDiv) {
-                if (childRepliesDiv.style.display === 'none') {
-                    childRepliesDiv.style.display = 'block';
-                    this.innerHTML = '<i class="bi bi-chevron-up"></i> Hide Replies';
-                } else {
-                    childRepliesDiv.style.display = 'none';
-                    this.innerHTML = '<i class="bi bi-chevron-down"></i> Show Replies';
-                }
+
+            if (childRepliesDiv.style.display === 'none' || childRepliesDiv.style.display === '') {
+                // Fetch child replies via AJAX
+                fetch(`/get-child-replies/${replyId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            childRepliesDiv.innerHTML = data.child_replies_html; // Update the child replies section
+                            childRepliesDiv.style.display = 'block';
+                            this.innerHTML = '<i class="bi bi-chevron-up"></i> Hide Replies';
+                        } else {
+                            console.error('Failed to load child replies');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
             } else {
-                console.error('Child replies div not found for reply ID:', replyId);
+                // Hide the child replies
+                childRepliesDiv.style.display = 'none';
+                this.innerHTML = '<i class="bi bi-chevron-down"></i> Show Replies';
             }
         });
     });
 });
+}
+    );
+
 </script>
