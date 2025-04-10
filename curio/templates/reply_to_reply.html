@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Reply to Reply</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            <p>{{ parent_reply.body }}</p>
+            <small class="text-muted">By {{ parent_reply.user.username }} on {{ parent_reply.created_at|date:"F j, Y, g:i a" }}</small>
+        </div>
+    </div>
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Submit Reply</button>
+    </form>
+</div>
+<!-- JavaScript for handling reply-to-reply form submission -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const replyForms = document.querySelectorAll('.reply-to-reply-form');
+        replyForms.forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const parentReplyId = formData.get('parent_reply_id');
+
+                fetch(`/reply/${parentReplyId}/`, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); // Reload the page to show the new reply
+                    } else {
+                        alert('Failed to submit reply.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting reply:', error);
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
