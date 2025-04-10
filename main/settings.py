@@ -31,7 +31,7 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-fea5.up.railway.app'
+    'https://web-production-fea5.up.railway.app',
 ]
 
 
