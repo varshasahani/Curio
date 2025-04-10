@@ -3,10 +3,10 @@
     <div class="mt-2">
         <!-- Reply and Like buttons -->
         <button class="btn btn-sm btn-outline-secondary reply-button" data-reply-id="{{ reply.id }}" title="Reply">
-            <i class="bi bi-reply"><small>Reply</small></i> <!-- Bootstrap Reply Icon -->
+            <i class="bi bi-reply"><small>Reply</small></i>
         </button>
         <button class="btn btn-sm btn-outline-primary like-button" data-reply-id="{{ question.id }}" title="Like">
-            <i class="bi bi-hand-thumbs-up"></i> <!-- Bootstrap Like Icon -->
+            <i class="bi bi-hand-thumbs-up"></i>
             <span class="like-count">{{ reply.likes.count }}</span>
             
         </button>
@@ -14,7 +14,7 @@
     </div>
 
     <!-- Hidden reply form -->
-    <div class="reply-form.inactive mt-3" id="reply-form-{{ reply.id }}"">
+    <div class="reply-form.inactive mt-3" id="reply-form-{{ reply.id }}">
         <form method="post" class="reply-to-reply-form">
             {% csrf_token %}
             <textarea name="body" class="form-control mb-2" rows="3" placeholder="Write your reply here..."></textarea>
@@ -57,15 +57,13 @@
     document.querySelectorAll('.reply-button').forEach(button => {
         button.addEventListener('click', function () {
             const replyId = this.getAttribute('data-reply-id');
-            console.log('Reply button clicked for reply ID:', replyId);
             const replyForm = document.getElementById(`reply-form-${replyId}`);
-            console.log('replyForm:', replyForm);
             if (replyForm) {
                 if (replyForm.classList.contains('inactive')) {
-    replyForm.classList.remove('inactive');
-} else {
-    replyForm.classList.add('inactive');
-}
+                    replyForm.classList.remove('inactive');
+                } else {
+                    replyForm.classList.add('inactive');
+                }
         } else {
             console.error(`Reply form not found for reply ID: ${replyId}`); // Debugging
         }
@@ -75,16 +73,12 @@
     document.querySelectorAll('.toggle-child-replies').forEach(button => {
         button.addEventListener('click', function () {
             const replyId = this.getAttribute('data-reply-id');
-            console.log('Show Replies button clicked for reply ID:', replyId);
-            console.log('replies:', reply)
             const childRepliesDiv = document.getElementById(`child-replies-${replyId}`);
             if (childRepliesDiv) {
                 if (childRepliesDiv.style.display === 'none') {
-                    console.log('Showing child replies for reply ID:', replyId);
                     childRepliesDiv.style.display = 'block';
                     this.innerHTML = '<i class="bi bi-chevron-up"></i> Hide Replies';
                 } else {
-                    console.log('Hiding child replies for reply ID:', replyId);
                     childRepliesDiv.style.display = 'none';
                     this.innerHTML = '<i class="bi bi-chevron-down"></i> Show Replies';
                 }

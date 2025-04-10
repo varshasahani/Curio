@@ -116,7 +116,7 @@ def reply_to_question(request, question_id):
                 body=body
             )
             # Render the updated replies section
-            replies_html = render_to_string('partials/replies.html', {'question': item})
+            replies_html = render_to_string('partials/replies.html', {'reply': item})
             return JsonResponse({'success': True, 'replies_html': replies_html})
     return JsonResponse({'success': False})
 
@@ -128,21 +128,6 @@ def question_detail(request, question_id):
         'replies': question.replies.all()  # Fetch all replies for the question
     }
     return render(request, 'question_detail.html', context)
-
-@login_required
-def reply_to_reply(request, reply_id):
-    parent_reply = get_object_or_404(Reply, id=reply_id)
-    if request.method == 'POST':
-        body = request.POST.get('body')
-        if body:
-            reply = Reply.objects.create(
-                user=request.user,
-                question=parent_reply.question,
-                parent_reply=parent_reply,
-                body=body
-            )
-            return JsonResponse({'success': True, 'child_reply_id': reply.id})
-    return JsonResponse({'success': False})
 
 @login_required
 def like_reply(request, reply_id):
