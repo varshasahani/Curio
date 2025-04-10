@@ -56,7 +56,8 @@
                         this.classList.remove('btn-primary');
                         this.classList.add('btn-outline-primary');
                     }
-                    this.textContent = `Like (${data.likes_count})`;
+                    const likeCountSpan = this.querySelector('.like-count');
+                    likeCountSpan.textContent = data.likes_count;
                 });
             });
         });

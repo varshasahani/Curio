@@ -11,6 +11,8 @@
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"/>
 
     <!-- jquery-->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <link href="{% static 'jquery-ui.min.css' %}" rel="stylesheet">
     <script src="{% static 'jquery.js' %}"></script>
     <script src="{% static 'jquery-ui.min.js' %}"></script>
@@ -18,41 +20,35 @@
     <title>Curio</title>
 </head>
 <body>
-<div class="container">
-    <header>
-        <div class="container">
-            <div class="blog-header py-3">
-                <div class="row flex-nowrap justify-content-between align-items-center">
-                    <div class="col-4">
-                        <div class="dropdown">
-                            <a class="btn btn-secondary dropdown-toggle" type="button" id="actionButton"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Actions
+    <div class="container curio-container">
+        <header class="curio-header">
+            <div class="container">
+                <div class="blog-header py-3">
+                    <div class="row flex-nowrap justify-content-between align-items-center">
+                        <div class="col-4">
+                            <a id="actionButton" aria-haspopup="true" aria-expanded="false">
+                                <img src="{% static 'images/logo.jpeg' %}" alt="Action Image" style="width: 60px; height: 60px;">
                             </a>
-                            <div class="dropdown-menu" aria-labelledby="actionButton">
-                               
-                            </div>
                         </div>
+                        <div class="col-4 text-center">
+                            <a class="blog-header-logo text-dark curio-brand" href='{% url "home" %}'>CURIO</a>
+                        </div>
+                        {% if user.is_authenticated %}
+                        <div class="col-4 d-flex justify-content-end align-items-center">
+                            <a class="mr-2 btn btn-primary" href="{% url 'post_question' %}">Post a Question</a>
+                            <a class="btn btn-md btn-outline-secondary" href='{% url 'logout' %}'>Log Out</a>
+                        </div>
+                        {% else %}
+                        <div class="col-4 d-flex justify-content-end align-items-center">
+                            <a class="btn btn-md btn-outline-secondary" href='{% url 'login' %}'>Log In</a>
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="col-4 text-center">
-                        <a class="blog-header-logo text-dark" href='{% url 'home' %}'>CURIO</a>
-                    </div>
-                    {% if user.is_authenticated %}
-                    <div class="col-4 d-flex justify-content-end align-items-center">
-                        <a class="btn btn-primary" href="{% url 'post_question' %}">Post a Question</a>
-                        <a class="btn btn-md btn-outline-secondary" href='{% url 'logout' %}'>Log Out</a>
-                    </div>
-                    {% else %}
-                    <div class="col-4 d-flex justify-content-end align-items-center">
-                        <a class="btn btn-md btn-outline-secondary" href='{% url 'login' %}'>Log In</a>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
-        </div>
-    </header>
-    {% block content %}{% endblock content %}
-</div>
+        </header>
+        {% block content %}{% endblock content %}
+    </div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"

@@ -1,36 +1,44 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-2">
     <h2 class="text-center mb-4">All Questions</h2>
+    <div class="scrollable-container">
     <div class="list-group">
         {% for question in questions %}
-            <div class="list-group-item">
+            <div class="list-group-item mb-2">
                 <h5 class="mb-1">{{ question.title }}</h5>
                 <p class="mb-1">{{ question.body|truncatechars:100 }}</p>
                 <small class="text-muted">Posted by {{ question.user.email }} on {{ question.created_at|date:"F j, Y, g:i a" }}</small>
                 {% if user.is_authenticated %}
-                <div class="mt-2">
-                    <button class="btn btn-sm btn-outline-secondary reply-button" data-question-id="{{ question.id }}">Reply</button>
-                    <button class="btn btn-sm btn-outline-primary like-button" data-question-id="{{ question.id }}">
-                        Like ({{ question.likes.count }})
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary reply-button" data-reply-id="{{ question.id }}" title="Reply">
+                        <i class="bi bi-reply"><small>Reply</small></i> <!-- Bootstrap Reply Icon -->
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary like-button" data-reply-id="{{ question.id }}" title="Like">
+                        <i class="bi bi-hand-thumbs-up"></i> <!-- Bootstrap Like Icon -->
+                        <span class="like-count">{{ question.likes.count }}</span>
                     </button>
                 </div>
                 <!-- Replies Section -->
-                <div class="mt-3" id="replies-{{ question.id }}">
+                <div class="mt-1" id="replies-{{ question.id }}">
                     <h6>Replies:</h6>
                     {% for reply in question.replies.all|slice:":1" %}
-                        <div class="border p-2 mb-2">
+                        <div class="border p-1 mb-1">
                             <p>{{ reply.body }}</p>
+                            <button class="btn btn-sm btn-outline-primary like-button" data-reply-id="{{ reply.id }}" title="Like">
+                                <i class="bi bi-hand-thumbs-up"></i> <!-- Bootstrap Like Icon -->
+                                <span class="like-count">{{ reply.likes.count }}</span>
+                            </button>
                             <small class="text-muted">By {{ reply.user.username }} on {{ reply.created_at|date:"F j, Y, g:i a" }}</small>
                         </div>
                     {% endfor %}
                     {% if question.replies.count > 1 %}
-                        <a href="{% url 'question_detail' question.id %}" class="btn btn-link">View all {{ question.replies.count }} replies</a>
+                        <a href="{% url 'question_detail' question.id %}" class="btn btn-link"><small>View all {{ question.replies.count }} replies</small></a>
                     {% endif %}
                 </div>
                 <!-- Hidden reply form -->
-                <div class="reply-form mt-3" id="reply-form-{{ question.id }}" style="display: none;">
+                <div class="reply-form inactive mt-1" id="reply-form-{{ question.id }}" >
                     <form method="post" class="reply-to-question-form" data-question-id="{{ question.id }}">
                         {% csrf_token %}
                         <textarea name="body" class="form-control mb-2" rows="3" placeholder="Write your reply here..."></textarea>
@@ -43,6 +51,7 @@
             <p class="text-center">No questions have been posted yet.</p>
         {% endfor %}
     </div>
+</div>
 </div>
 
 <script>
@@ -58,6 +67,33 @@
                 } else {
                     replyForm.style.display = 'none';
                 }
+            });
+        });
+
+        // Handle like button clicks
+        const likeButtons = document.querySelectorAll('.like-button');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const replyId = this.getAttribute('data-reply-id');
+                fetch(`/like-reply/${replyId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.liked) {
+                        this.classList.remove('btn-outline-primary');
+                        this.classList.add('btn-primary');
+                    } else {
+                        this.classList.remove('btn-primary');
+                        this.classList.add('btn-outline-primary');
+                    }
+                    const likeCountSpan = this.querySelector('.like-count');
+                    likeCountSpan.textContent = data.likes_count;
+                });
             });
         });
 
@@ -88,6 +124,24 @@
                     }
                 });
             });
+        });
+    });
+
+    document.querySelectorAll('.reply-button').forEach(button => {
+        button.addEventListener('click', function () {
+            const replyId = this.getAttribute('data-reply-id');
+            console.log('Reply button clicked for reply ID:', replyId);
+            const replyForm = document.getElementById(`reply-form-${replyId}`);
+            console.log('replyForm:', replyForm);
+            if (replyForm) {
+                if (replyForm.classList.contains('inactive')) {
+    replyForm.classList.remove('inactive');
+} else {
+    replyForm.classList.add('inactive');
+}
+        } else {
+            console.error(`Reply form not found for reply ID: ${replyId}`); // Debugging
+        }
         });
     });
 </script>

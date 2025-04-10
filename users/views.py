@@ -94,17 +94,29 @@ def like_question(request, question_id):
 
 @login_required
 def reply_to_question(request, question_id):
-    question = get_object_or_404(Question, id=question_id)
+    item=None
+    item_type=None
+    try:
+        item= get_object_or_404(Question, id=question_id)
+        item_type = 'questions'
+    except:
+        try:
+            item = get_object_or_404(Reply, id=question_id)
+            print('item',item.question)
+            item_type = 'reply'
+        except:
+            return JsonResponse({'error': 'Item not found'}, status=404)
     if request.method == 'POST':
         body = request.POST.get('body')
         if body:
             reply = Reply.objects.create(
                 user=request.user,
-                question=question,
+                question=item if item_type == 'questions' else item.question,
+                parent_reply=item if item_type == 'reply' else None,
                 body=body
             )
             # Render the updated replies section
-            replies_html = render_to_string('partials/replies.html', {'question': question})
+            replies_html = render_to_string('partials/replies.html', {'question': item})
             return JsonResponse({'success': True, 'replies_html': replies_html})
     return JsonResponse({'success': False})
 
@@ -134,13 +146,32 @@ def reply_to_reply(request, reply_id):
 
 @login_required
 def like_reply(request, reply_id):
-    reply = get_object_or_404(Reply, id=reply_id)
-    like, created = Like.objects.get_or_create(user=request.user, reply=reply)
+    item=None
+    item_type=None
+    try:
+        # Try to fetch a Reply
+        item = get_object_or_404(Reply, id=reply_id)
+        item_type = 'reply'
+    except:
+        try:
+            # If no Reply is found, try to fetch a Question
+            print('item_id',item_type)
+            item = get_object_or_404(Question, id=reply_id)
+            item_type = 'question'
+        except:
+            return JsonResponse({'error': 'Item not found'}, status=404)
+
+    # Handle the like/unlike logic
+    like, created = Like.objects.get_or_create(
+        user=request.user,
+        reply=item if item_type == 'reply' else None,
+        question=item if item_type == 'question' else None
+    )
 
     if not created:
         # If the like already exists, remove it (unlike)
         like.delete()
-        return JsonResponse({'liked': False, 'likes_count': reply.likes.count()})
-    
+        return JsonResponse({'liked': False, 'likes_count': item.likes.count()})
+
     # If the like was created, return success
-    return JsonResponse({'liked': True, 'likes_count': reply.likes.count()})
+    return JsonResponse({'liked': True, 'likes_count': item.likes.count()})

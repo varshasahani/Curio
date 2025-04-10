@@ -77,6 +77,6 @@ class ReplyForm(forms.ModelForm):
             'body': forms.Textarea(attrs={
                 'class': 'form-control',
                 'placeholder': 'Write your reply here...',
-                'rows': 3
+                'rows': 1
             }),
         }
