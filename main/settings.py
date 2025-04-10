@@ -27,11 +27,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'web-production-dcc9.up.railway.app',
-    '127.0.0.1', 'localhost',            
+    '127.0.0.1',
+    'localhost',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-fea5.up.railway.app',
+    'https://web-production-dcc9.up.railway.app',
 ]
 
 
