@@ -49,13 +49,6 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.liked) {
-                        this.classList.remove('btn-outline-primary');
-                        this.classList.add('btn-primary');
-                    } else {
-                        this.classList.remove('btn-primary');
-                        this.classList.add('btn-outline-primary');
-                    }
                     const likeCountSpan = this.querySelector('.like-count');
                     likeCountSpan.textContent = data.likes_count;
                 });

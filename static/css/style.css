@@ -44,6 +44,7 @@
     }
     
     .like-count {
+        color: green;
         margin-left: 5px; /* Add spacing between the like icon and count */
     }
 
@@ -58,8 +59,8 @@
     }
  
     .reply-form.inactive {
-        display: block; /* Visible state */
+        display: none; /* Visible state */
     }
     .reply-form{
-        display: none;
+        display: block;
     }

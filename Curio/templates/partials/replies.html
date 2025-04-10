@@ -1,4 +1,5 @@
 <div class="list-group-item">
+    {% if not reply.body.question %}
     <p>{{ reply.body }}</p>
     <div class="mt-2">
         <!-- Reply and Like buttons -->
@@ -14,7 +15,7 @@
     </div>
 
     <!-- Hidden reply form -->
-    <div class="reply-form.inactive mt-3" id="reply-form-{{ reply.id }}">
+    <div class="reply-form.inactive mt-3" id="reply-form-{{ reply.id }}" style="display: none;">
         <form method="post" class="reply-to-reply-form">
             {% csrf_token %}
             <textarea name="body" class="form-control mb-2" rows="1" placeholder="Write your reply here..."></textarea>
@@ -38,6 +39,7 @@
             </div>
         </div>
     {% endif %}
+    {%endif %}
 </div>
 
 <script>

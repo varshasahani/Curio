@@ -20,6 +20,14 @@
                         <span class="like-count">{{ question.likes.count }}</span>
                     </button>
                 </div>
+                 <!-- Hidden reply form -->
+                 <div class="reply-form inactive mt-1" id="reply-form-{{ question.id }}" style="display: none;">
+                    <form method="post" class="reply-to-question-form" data-question-id="{{ question.id }}">
+                        {% csrf_token %}
+                        <textarea name="body" class="form-control mb-2" rows="1" placeholder="Write your reply here..."></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm">Submit Reply</button>
+                    </form>
+                </div>
                 <!-- Replies Section -->
                 <div class="mt-1" id="replies-{{ question.id }}">
                     <h6>Replies:</h6>
@@ -37,14 +45,7 @@
                         <a href="{% url 'question_detail' question.id %}" class="btn btn-link"><small>View all {{ question.replies.count }} replies</small></a>
                     {% endif %}
                 </div>
-                <!-- Hidden reply form -->
-                <div class="reply-form inactive mt-1" id="reply-form-{{ question.id }}" >
-                    <form method="post" class="reply-to-question-form" data-question-id="{{ question.id }}">
-                        {% csrf_token %}
-                        <textarea name="body" class="form-control mb-2" rows="3" placeholder="Write your reply here..."></textarea>
-                        <button type="submit" class="btn btn-primary btn-sm">Submit Reply</button>
-                    </form>
-                </div>
+               
                 {% endif %}
             </div>
         {% empty %}
@@ -60,8 +61,9 @@
         const replyButtons = document.querySelectorAll('.reply-button');
         replyButtons.forEach(button => {
             button.addEventListener('click', function () {
-                const questionId = this.getAttribute('data-question-id');
+                const questionId = this.getAttribute('data-reply-id');
                 const replyForm = document.getElementById(`reply-form-${questionId}`);
+                console.log('replyForm:', replyForm,questionId);
                 if (replyForm.style.display === 'none') {
                     replyForm.style.display = 'block';
                 } else {
@@ -84,13 +86,6 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.liked) {
-                        this.classList.remove('btn-outline-primary');
-                        this.classList.add('btn-primary');
-                    } else {
-                        this.classList.remove('btn-primary');
-                        this.classList.add('btn-outline-primary');
-                    }
                     const likeCountSpan = this.querySelector('.like-count');
                     likeCountSpan.textContent = data.likes_count;
                 });
@@ -127,22 +122,6 @@
         });
     });
 
-    document.querySelectorAll('.reply-button').forEach(button => {
-        button.addEventListener('click', function () {
-            const replyId = this.getAttribute('data-reply-id');
-            console.log('Reply button clicked for reply ID:', replyId);
-            const replyForm = document.getElementById(`reply-form-${replyId}`);
-            console.log('replyForm:', replyForm);
-            if (replyForm) {
-                if (replyForm.classList.contains('inactive')) {
-    replyForm.classList.remove('inactive');
-} else {
-    replyForm.classList.add('inactive');
-}
-        } else {
-            console.error(`Reply form not found for reply ID: ${replyId}`); // Debugging
-        }
-        });
-    });
+    
 </script>
 {% endblock %}
