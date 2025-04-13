@@ -59,4 +59,4 @@ Like: Like replies to show appreciation.
 
 The project is hosted on [Railway](https://railway.app). You can access the live application at:
 
-**Production URL**: https://web-production-dcc9.up.railway.app (https://web-production-dcc9.up.railway.app)
+**Production URL**:[https://web-production-dcc9.up.railway.app](https://web-production-dcc9.up.railway.app)
