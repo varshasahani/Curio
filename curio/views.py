@@ -75,27 +75,6 @@ def post_question(request):
     return render(request, 'post_question.html', {'form': form})
 
 @login_required
-def edit_question(request, question_id):
-    question = get_object_or_404(Question, id=question_id, user=request.user)
-    if request.method == 'POST':
-        form = QuestionForm(request.POST, instance=question)
-        if form.is_valid():
-            form.save()
-            return redirect('home')  # Redirect to the home page or question detail page
-    else:
-        form = QuestionForm(instance=question)
-    return render(request, 'edit_question.html', {'form': form})
-
-
-@login_required
-def delete_question(request, question_id):
-    question = get_object_or_404(Question, id=question_id, user=request.user)
-    if request.method == 'POST':
-        question.delete()
-        return redirect('home')  # Redirect to the home page
-    return redirect('home')
-
-@login_required
 def like_question(request, question_id):
     question = get_object_or_404(Question, id=question_id)
     like, created = Like.objects.get_or_create(user=request.user, question=question)
