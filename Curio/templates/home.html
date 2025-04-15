@@ -9,6 +9,17 @@
             <div class="list-group-item mb-2">
                 <h5 class="mb-1">{{ question.title }}</h5>
                 <p class="mb-1">{{ question.body|truncatechars:100 }}</p>
+                <div>
+                    <small>
+                        {% for tag in question.tags.all %}
+                        <a href="{% url 'tag_filter' tag.name %}" class="badge bg-light text-decoration-none me-2">
+                            {{ tag.name }}
+                        </a>
+                    {% empty %}
+                        <span>No tags</span>
+                    {% endfor %}
+                </small>
+                </div>
                 <small class="text-muted">Posted by {{ question.user.email }} on {{ question.created_at|date:"F j, Y, g:i a" }}</small>         
                 {% if user.is_authenticated %}
                 <div>

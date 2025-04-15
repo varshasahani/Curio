@@ -15,4 +15,6 @@ urlpatterns = [
     path('like-reply/<int:reply_id>/', views.like_reply, name='like_reply'),
     path('reply-to-question/<int:question_id>/', views.reply_to_question, name='reply_to_question'),
     path('reply-to-reply/<int:reply_id>/', views.reply_to_reply, name='reply_to_reply'),
+    path('tags/<str:tag_name>/', views.tag_filter, name='tag_filter'),
+    path('search/', views.search_questions, name='search_questions')
 ]

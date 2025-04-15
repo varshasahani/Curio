@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth import get_user_model
+from taggit.managers import TaggableManager
 
 class User(AbstractBaseUser):
     email = models.EmailField(unique=True)
@@ -19,6 +20,7 @@ class Question(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="questions")
     title = models.CharField(max_length=255)
     body = models.TextField()
+    tags = TaggableManager()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
