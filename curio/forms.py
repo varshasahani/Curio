@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from .models import Question, Reply
+from taggit.forms import TagWidget
 
 User = get_user_model()
 
@@ -42,10 +43,11 @@ class RegisterForm(forms.Form):
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['title', 'body']  # Fields to be filled by the user
+        fields = ['title', 'body','tags']  # Fields to be filled by the user
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter question title'}),
             'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter question details'}),
+            'tags': TagWidget(attrs={'class': 'form-control','placeholder': 'Add tags separated by commas'}),
         }
 
 class ReplyForm(forms.ModelForm):

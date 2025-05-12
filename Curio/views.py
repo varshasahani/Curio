@@ -5,17 +5,17 @@ from django.contrib.auth.decorators import login_required
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.template.loader import render_to_string
 from .forms import LoginForm, RegisterForm, QuestionForm, ReplyForm
+from django.db.models import Q
 
 from django.shortcuts import render
 from .models import Question,Like,Reply
 
-def home(request):
-    print('home',request)
+def questions(request):
     questions = Question.objects.all().order_by('-created_at')  # Fetch all questions, ordered by newest first
     context = {
         'questions': questions
     }
-    return render(request, 'home.html', context)
+    return render(request, 'questions.html', context)
 
 def logout_view(request):
     logout(request)
@@ -62,17 +62,43 @@ def register_page(request):
 
 @login_required
 def post_question(request):
-    print('reques',request.user)
     if request.method == 'POST':
         form = QuestionForm(request.POST)
         if form.is_valid():
             question = form.save(commit=False)
             question.user = User.objects.get(id=request.user.id)  # Associate the question with the logged-in user
             question.save()
+            form.save_m2m()
+            # Add tags to the question
             return redirect('/')  # Redirect to the home page or question list
     else:
         form = QuestionForm()
     return render(request, 'post_question.html', {'form': form})
+
+def tag_filter(request, tag_name):
+    questions = Question.objects.filter(tags__name__in=[tag_name])
+    return render(request, 'home.html', {'questions': questions, 'tag_name': tag_name})
+
+@login_required
+def edit_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id, user=request.user)
+    if request.method == 'POST':
+        form = QuestionForm(request.POST, instance=question)
+        if form.is_valid():
+            form.save()
+            return redirect('home')  # Redirect to the home page or question detail page
+    else:
+        form = QuestionForm(instance=question)
+    return render(request, 'edit_question.html', {'form': form})
+
+
+@login_required
+def delete_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id, user=request.user)
+    if request.method == 'POST':
+        question.delete()
+        return redirect('home')  # Redirect to the home page
+    return redirect('home')
 
 @login_required
 def edit_question(request, question_id):
@@ -154,7 +180,6 @@ def reply_to_reply(request, reply_id):
 
 def question_detail(request, question_id):
     question = get_object_or_404(Question, id=question_id)
-    print('replieeeee',question.replies.all())
     context = {
         'question': question,
         'replies': question.replies.all()  # Fetch all replies for the question
@@ -192,3 +217,24 @@ def like_reply(request, reply_id):
 
     # If the like was created, return success
     return JsonResponse({'liked': True, 'likes_count': item.likes.count()})
+
+
+def search_questions(request):
+    query = request.GET.get('q', '').strip()  # strip spaces and handle None
+    results = Question.objects.all().order_by('-created_at')
+
+    print("query:", repr(query))  # repr shows even invisible spaces
+
+    if query:  # only search if query is not empty
+        results = Question.objects.filter(
+            Q(title__icontains=query) |
+            Q(body__icontains=query) |
+            Q(tags__name__icontains=query)
+        ).distinct().order_by('-created_at')
+
+    context = {
+        'questions': results,
+    }
+
+    print("context:", context)
+    return render(request, 'home.html', context)

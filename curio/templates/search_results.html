@@ -1,0 +1,14 @@
+<h2>Search Results for "{{ query }}"</h2>
+
+{% if results %}
+    <ul>
+    {% for question in results %}
+        <li>
+            <a href="{% url 'question_detail' question.pk %}">{{ question.title }}</a><br>
+            <small>{{ question.body|truncatechars:100 }}</small>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No results found.</p>
+{% endif %}
