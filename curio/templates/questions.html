@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-2">
+    <h2 class="text-center mb-4">All Questions</h2>
+    <div class="scrollable-container">
+    <div class="list-group">
+        {% for question in questions %}
+            <div class="list-group-item mb-2">
+                <h5 class="mb-1">{{ question.title }}</h5>
+                <p class="mb-1">{{ question.body|truncatechars:100 }}</p>
+                <div>
+                    <small>
+                        {% for tag in question.tags.all %}
+                        <a href="{% url 'tag_filter' tag.name %}" class="badge bg-light text-decoration-none me-2">
+                            {{ tag.name }}
+                        </a>
+                    {% empty %}
+                        <span>No tags</span>
+                    {% endfor %}
+                </small>
+                </div>
+                <small class="text-muted">Posted by {{ question.user.email }} on {{ question.created_at|date:"F j, Y, g:i a" }}</small>         
+                {% if user.is_authenticated %}
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary reply-button" data-reply-id="{{ question.id }}" title="Reply">
+                        <i class="bi bi-reply"><small>Reply</small></i> <!-- Bootstrap Reply Icon -->
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary like-button" data-reply-id="{{ question.id }}" title="Like">
+                        <i class="bi bi-hand-thumbs-up"></i> <!-- Bootstrap Like Icon -->
+                        <span class="like-count">{{ question.likes.count }}</span>
+                    </button>
+                    
+                    {% if user == question.user or user.is_superuser %}
+                    
+                        <!-- Edit Button -->
+                        <a href="{% url 'edit_question' question.id %}" class="btn btn-sm btn-outline-primary me-1 edit-button" title="Edit">
+                            <i class="bi bi-pencil"></i> <!-- Bootstrap Edit Icon -->
+                        </a>
+                        <!-- Delete Button -->
+                        <form method="post" action="{% url 'delete_question' question.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this question?');">
+                                <i class="bi bi-trash"></i> <!-- Bootstrap Delete Icon -->
+                            </button>
+                        </form>
+                    
+                    {% endif %}
+                    
+                </div>
+                 <!-- Hidden reply form -->
+                 <div class="reply-form inactive mt-1" id="reply-form-{{ question.id }}" style="display: none;">
+                    <form method="post" class="reply-to-question-form" data-question-id="{{ question.id }}">
+                        {% csrf_token %}
+                        <textarea name="body" class="form-control mb-2" rows="1" placeholder="Write your reply here..."></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm">Submit Reply</button>
+                    </form>
+                </div>
+                <!-- Replies Section -->
+                <div class="mt-1" id="replies-{{ question.id }}">
+                    <h6>Replies:</h6>
+                    {% for reply in question.replies.all|slice:":1" %}
+                        <div class="border p-1 mb-1">
+                            <p>{{ reply.body }}</p>
+                            <button class="btn btn-sm btn-outline-primary like-button" data-reply-id="{{ reply.id }}" title="Like">
+                                <i class="bi bi-hand-thumbs-up"></i> <!-- Bootstrap Like Icon -->
+                                <span class="like-count">{{ reply.likes.count }}</span>
+                            </button>
+                            <small class="text-muted">By {{ reply.user.username }} on {{ reply.created_at|date:"F j, Y, g:i a" }}</small>
+                        </div>
+                    {% endfor %}
+                    {% if question.replies.count > 1 %}
+                        <a href="{% url 'question_detail' question.id %}" class="btn btn-link"><small>View all {{ question.replies.count }} replies</small></a>
+                    {% endif %}
+                </div>
+               
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="text-center">No questions have been posted yet.</p>
+        {% endfor %}
+    </div>
+</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Toggle reply form visibility
+        const replyButtons = document.querySelectorAll('.reply-button');
+        replyButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const questionId = this.getAttribute('data-reply-id');
+                const replyForm = document.getElementById(`reply-form-${questionId}`);
+                console.log('replyForm:', replyForm,questionId);
+                if (replyForm.style.display === 'none') {
+                    replyForm.style.display = 'block';
+                } else {
+                    replyForm.style.display = 'none';
+                }
+            });
+        });
+
+        // Handle like button clicks
+        const likeButtons = document.querySelectorAll('.like-button');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const replyId = this.getAttribute('data-reply-id');
+                fetch(`/like-reply/${replyId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const likeCountSpan = this.querySelector('.like-count');
+                    likeCountSpan.textContent = data.likes_count;
+                });
+            });
+        });
+
+        // Handle reply form submission
+        const replyForms = document.querySelectorAll('.reply-to-question-form');
+        replyForms.forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const questionId = this.getAttribute('data-question-id');
+                const formData = new FormData(this);
+
+                fetch(`/reply-to-question/${questionId}/`, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close the reply form
+                        const replyForm = document.getElementById(`reply-form-${questionId}`);
+                        replyForm.style.display = 'none';
+
+                        // Update the replies section
+                        const repliesDiv = document.getElementById(`replies-${questionId}`);
+                        repliesDiv.innerHTML = data.replies_html;
+                    } else {
+                        alert('Failed to submit reply.');
+                    }
+                });
+            });
+        });
+    });
+
+    
+</script>
+{% endblock %}

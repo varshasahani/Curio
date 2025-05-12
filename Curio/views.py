@@ -10,12 +10,12 @@ from django.db.models import Q
 from django.shortcuts import render
 from .models import Question,Like,Reply
 
-def home(request):
+def questions(request):
     questions = Question.objects.all().order_by('-created_at')  # Fetch all questions, ordered by newest first
     context = {
         'questions': questions
     }
-    return render(request, 'home.html', context)
+    return render(request, 'questions.html', context)
 
 def logout_view(request):
     logout(request)
@@ -197,18 +197,23 @@ def like_reply(request, reply_id):
     # If the like was created, return success
     return JsonResponse({'liked': True, 'likes_count': item.likes.count()})
 
+
 def search_questions(request):
-    query = request.GET.get('q')
+    query = request.GET.get('q', '').strip()  # strip spaces and handle None
     results = Question.objects.all().order_by('-created_at')
 
-    if query!=" ":
+    print("query:", repr(query))  # repr shows even invisible spaces
+
+    if query:  # only search if query is not empty
         results = Question.objects.filter(
             Q(title__icontains=query) |
             Q(body__icontains=query) |
             Q(tags__name__icontains=query)
-        ).distinct()
+        ).distinct().order_by('-created_at')
+
     context = {
         'questions': results,
     }
 
+    print("context:", context)
     return render(request, 'home.html', context)
